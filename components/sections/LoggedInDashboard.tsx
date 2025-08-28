@@ -15,7 +15,10 @@ import {
   Target,
   Gift,
   Bell,
-  Settings
+  Settings,
+  User,
+  Camera,
+  Edit
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
@@ -104,14 +107,62 @@ export default function LoggedInDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-8"
+            className="flex flex-col md:flex-row items-center justify-between mb-8"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Welcome back, {session?.user?.name || 'Player'}! 👋
-            </h1>
-            <p className="text-secondary-300 text-lg">
-              Ready to place your next winning bet?
-            </p>
+            <div className="text-center md:text-left mb-4 md:mb-0">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Welcome back, {session?.user?.name || 'Player'}! 👋
+              </h1>
+              <p className="text-secondary-300 text-lg">
+                Ready to place your next winning bet?
+              </p>
+            </div>
+            
+            {/* Profile Section */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="flex items-center space-x-4 bg-secondary-800 rounded-2xl p-4 border border-secondary-700"
+            >
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center overflow-hidden">
+                  {session?.user?.image ? (
+                    <img 
+                      src={session.user.image} 
+                      alt={session?.user?.name || 'Profile'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-8 h-8 text-white" />
+                  )}
+                </div>
+                <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center hover:bg-primary-400 transition-colors">
+                  <Camera className="w-3 h-3 text-white" />
+                </button>
+              </div>
+              
+              <div className="text-left">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-white font-semibold">{session?.user?.name || 'Player'}</h3>
+                  <button className="text-secondary-400 hover:text-primary-400 transition-colors">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-secondary-400 text-sm">{session?.user?.email}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Star className="w-4 h-4 text-yellow-400" />
+                  <span className="text-yellow-400 text-sm font-medium">Gold Member</span>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => window.location.href = '/profile'}
+                className="text-secondary-400 hover:text-primary-400 transition-colors"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </motion.div>
           </motion.div>
 
           {/* Account Overview */}

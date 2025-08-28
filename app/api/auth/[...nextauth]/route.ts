@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { NextAuthOptions } from 'next-auth'
 
 /**
@@ -8,6 +9,10 @@ import { NextAuthOptions } from 'next-auth'
  */
 export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -56,15 +61,62 @@ export const authOptions: NextAuthOptions = {
     signIn: '/', // Custom sign-in page (your modal)
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google') {
+        try {
+          const { connectDB } = await import('@/lib/mongodb')
+          const User = (await import('@/models/User')).default
+          
+          await connectDB()
+          
+          let existingUser = await User.findOne({ googleId: user.id })
+          
+          if (!existingUser) {
+            // Check if user exists with same email
+            existingUser = await User.findOne({ email: user.email })
+            
+            if (existingUser) {
+              // Link Google account to existing user
+              existingUser.googleId = user.id
+              existingUser.profilePicture = user.image || ''
+              existingUser.authProvider = 'google'
+              await existingUser.save()
+            } else {
+              // Create new user
+              await User.create({
+                name: user.name,
+                email: user.email,
+                googleId: user.id,
+                profilePicture: user.image || '',
+                isVerified: true,
+                authProvider: 'google',
+                lastLogin: new Date()
+              })
+            }
+          } else {
+            // Update existing Google user
+            existingUser.lastLogin = new Date()
+            existingUser.profilePicture = user.image || existingUser.profilePicture
+            await existingUser.save()
+          }
+        } catch (error) {
+          console.error('Google sign-in error:', error)
+          return false
+        }
+      }
+      return true
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
+        token.provider = account?.provider
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
+        session.user.provider = token.provider as string
       }
       return session
     },

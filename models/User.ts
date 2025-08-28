@@ -4,15 +4,21 @@ import bcrypt from 'bcryptjs'
 export interface IUser extends Document {
   name: string
   email: string
-  password: string
+  password?: string
   phone?: string
   balance: number
   isVerified: boolean
   role: 'user' | 'admin'
   avatar?: string
+  profilePicture?: string
   dateOfBirth?: Date
   country: string
   currency: string
+  username?: string
+  googleId?: string
+  telegramId?: string
+  authProvider?: 'credentials' | 'google' | 'telegram'
+  lastLogin?: Date
   preferences: {
     language: string
     notifications: boolean
@@ -44,9 +50,36 @@ const UserSchema = new Schema<IUser>({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: function(this: IUser) {
+      return this.authProvider === 'credentials'
+    },
     minlength: [6, 'Password must be at least 6 characters'],
     select: false
+  },
+  username: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  telegramId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  authProvider: {
+    type: String,
+    enum: ['credentials', 'google', 'telegram'],
+    default: 'credentials'
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
   },
   phone: {
     type: String,
@@ -67,6 +100,10 @@ const UserSchema = new Schema<IUser>({
     default: 'user'
   },
   avatar: {
+    type: String,
+    default: ''
+  },
+  profilePicture: {
     type: String,
     default: ''
   },
@@ -103,9 +140,11 @@ const UserSchema = new Schema<IUser>({
   timestamps: true
 })
 
-// Hash password before saving
+// Hash password before saving (only for credential-based auth)
 UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next()
+  if (!this.isModified('password') || !this.password || this.authProvider !== 'credentials') {
+    return next()
+  }
   
   try {
     const salt = await bcrypt.genSalt(12)

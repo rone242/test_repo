@@ -58,6 +58,14 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Login error:', error)
     
+    // Handle MongoDB connection errors
+    if (error.name === 'MongoServerSelectionError' || error.reason?.type === 'ReplicaSetNoPrimary') {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please try again later or contact support.' },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

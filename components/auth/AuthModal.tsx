@@ -58,7 +58,7 @@ export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthM
         if (result?.ok) {
           toast.success('Login successful!')
           onClose()
-          window.location.reload() // Refresh to update session
+          window.location.href = '/dashboard' // Redirect to dashboard
         } else {
           toast.error('Login failed. Please try again.')
         }
@@ -99,7 +99,7 @@ export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthM
 
         if (loginResult?.ok) {
           onClose()
-          window.location.reload()
+          window.location.href = '/dashboard' // Redirect to dashboard
         }
       }
     } catch (error: any) {
@@ -322,6 +322,52 @@ export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthM
               </Button>
             </form>
           )}
+
+          {/* OAuth Providers */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-secondary-600" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-secondary-800 text-secondary-400">Or continue with</span>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {/* Google OAuth */}
+              <button
+                type="button"
+                onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                disabled={isLoading}
+                className="w-full inline-flex justify-center py-3 px-4 border border-secondary-600 rounded-lg shadow-sm bg-secondary-700 text-sm font-medium text-white hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span className="ml-2">Google</span>
+              </button>
+
+              {/* Telegram OAuth */}
+              <button
+                type="button"
+                onClick={() => {
+                  // Telegram Web App authentication will be handled separately
+                  toast.info('Telegram authentication coming soon!')
+                }}
+                disabled={isLoading}
+                className="w-full inline-flex justify-center py-3 px-4 border border-secondary-600 rounded-lg shadow-sm bg-secondary-700 text-sm font-medium text-white hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#0088cc">
+                  <path d="M12 0C5.374 0 0 5.373 0 12s5.374 12 12 12 12-5.373 12-12S18.626 0 12 0zm5.568 8.16c-.169 1.858-.896 6.728-.896 6.728-.896 6.728-1.268 8.368-1.268 8.368-.16.708-.534.708-.534.708s-1.924-.64-2.746-1.12c-.534-.32-2.746-1.76-3.76-2.56-.16-.16-.32-.48-.16-.8.32-.64 2.746-2.56 5.334-5.12.534-.48.374-.8-.16-.48-3.76 2.4-8.8 5.28-9.6 5.76-.8.48-1.6.16-1.6.16s-1.76-.64-1.76-1.28c0-.64.96-1.12.96-1.12s10.24-4.16 11.36-4.64c1.12-.48 1.6.16 1.6.16z"/>
+                </svg>
+                <span className="ml-2">Telegram</span>
+              </button>
+            </div>
+          </div>
 
           {/* Switch Mode */}
           <div className="mt-6 text-center">

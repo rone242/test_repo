@@ -77,6 +77,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle MongoDB connection errors
+    if (error.name === 'MongoServerSelectionError' || error.reason?.type === 'ReplicaSetNoPrimary') {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please try again later or contact support.' },
+        { status: 503 }
+      )
+    }
+
+    // Handle duplicate key errors (email already exists)
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: 'User with this email already exists' },
+        { status: 409 }
+      )
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

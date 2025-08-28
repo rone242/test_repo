@@ -29,17 +29,27 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000,
     }
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('✅ MongoDB connected successfully')
       return mongoose
     })
   }
 
   try {
     cached.conn = await cached.promise
-  } catch (e) {
+  } catch (e: any) {
     cached.promise = null
+    console.error('❌ MongoDB connection failed:', e.message)
+    
+    // Provide helpful error messages
+    if (e.message.includes('ENOTFOUND') || e.message.includes('ECONNREFUSED')) {
+      throw new Error('MongoDB Atlas connection failed. Please check: 1) Your IP is whitelisted in MongoDB Atlas, 2) Your internet connection, 3) MongoDB Atlas cluster is running')
+    }
+    
     throw e
   }
 
